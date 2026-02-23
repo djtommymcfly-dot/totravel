@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0ea5e9">
+    <meta name="description" content="ToTravel - O teu companheiro de viagem do primeiro sonho à última memória. Planeia, organiza e revive cada viagem num só lugar.">
+    <title>ToTravel - Planeia. Viaja. Recorda.</title>
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVG9UcmF2ZWwiLCJzaG9ydF9uYW1lIjoiVG9UcmF2ZWwiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzBlYTVlOSJ9">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'], 
+                        display: ['Poppins', 'sans-serif'] 
+                    },
+                    colors: {
+                        primary: { 
+                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 
+                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 
+                            800: '#075985', 900: '#0c4a6e' 
+                        },
+                        accent: { 
+                            50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 
+                            400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857', 
+                            800: '#065f46', 900: '#064e3b' 
+                        },
+                        sunset: { 
+                            50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74', 
+                            400: '#fb923c', 500: '#f97316', 600: '#ea580c', 700: '#c2410c', 
+                            800: '#9a3412', 900: '#7c2d12' 
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Stylesheet Local -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+    
+    <!-- ============================================
+         SELETOR DE IDIOMA INICIAL (PRIMEIRA AÇÃO)
+         ============================================ -->
+    <div id="languageSelectorModal" class="language-selector-modal hidden">
+        <div class="language-selector-content">
+            <div class="language-selector-logo">
+                <i class="fas fa-plane"></i>
+            </div>
+            <h1 class="language-selector-title">ToTravel</h1>
+            <p class="language-selector-subtitle" data-i18n="choose_language">Escolhe o idioma para começar</p>
+            
+            <div class="language-options">
+                <div class="language-option-card" onclick="selectInitialLanguage('pt')">
+                    <span class="language-option-flag">🇵🇹</span>
+                    <div class="language-option-info">
+                        <div class="language-option-name">Português</div>
+                        <div class="language-option-native">Português</div>
+                    </div>
+                    <i class="fas fa-chevron-right language-option-arrow"></i>
+                </div>
+                
+                <div class="language-option-card" onclick="selectInitialLanguage('en')">
+                    <span class="language-option-flag">🇬🇧</span>
+                    <div class="language-option-info">
+                        <div class="language-option-name">English</div>
+                        <div class="language-option-native">English</div>
+                    </div>
+                    <i class="fas fa-chevron-right language-option-arrow"></i>
+                </div>
+                
+                <div class="language-option-card" onclick="selectInitialLanguage('es')">
+                    <span class="language-option-flag">🇪🇸</span>
+                    <div class="language-option-info">
+                        <div class="language-option-name">Español</div>
+                        <div class="language-option-native">Español</div>
+                    </div>
+                    <i class="fas fa-chevron-right language-option-arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         ONBOARDING MODAL
+         ============================================ -->
+    <div id="onboardingModal" class="onboarding-overlay hidden">
+        <div class="w-full max-w-md mx-4">
+            <!-- Step 1 -->
+            <div id="onboardingStep1" class="text-center text-white">
+                <div class="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center animate-float">
+                    <i class="fas fa-plane-departure text-4xl"></i>
+                </div>
+                <h1 class="font-display text-3xl font-bold mb-4" data-i18n="welcome_title">Bem-vindo ao ToTravel</h1>
+                <p class="text-lg text-white/80 mb-8" data-i18n="welcome_subtitle">O teu companheiro de viagem do primeiro sonho à última memória</p>
+                <div class="space-y-3">
+                    <button onclick="nextOnboarding(2)" class="w-full py-4 bg-white text-primary-600 rounded-2xl font-semibold text-lg btn-primary" data-i18n="start_planning">Começar a Planejar</button>
+                    <button onclick="skipOnboarding()" class="w-full py-3 text-white/60 hover:text-white transition" data-i18n="know_app">Já conheço a app</button>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div id="onboardingStep2" class="hidden text-center text-white">
+                <div class="w-20 h-20 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-map-marked-alt text-3xl"></i>
+                </div>
+                <h2 class="font-display text-2xl font-bold mb-4" data-i18n="all_in_one">Tudo num só lugar</h2>
+                <p class="text-white/80 mb-8" data-i18n="organize_text">Organiza o teu itinerário, orçamento, checklists e memórias numa única plataforma intuitiva.</p>
+                <div class="flex justify-center gap-2 mb-8">
+                    <div class="w-2 h-2 rounded-full bg-white/40"></div>
+                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                    <div class="w-2 h-2 rounded-full bg-white/40"></div>
+                </div>
+                <button onclick="nextOnboarding(3)" class="w-full py-4 bg-white text-primary-600 rounded-2xl font-semibold" data-i18n="continue">Continuar</button>
+            </div>
+            
+            <!-- Step 3 -->
+            <div id="onboardingStep3" class="hidden text-center text-white">
+                <div class="w-20 h-20 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-mobile-alt text-3xl"></i>
+                </div>
+                <h2 class="font-display text-2xl font-bold mb-4" data-i18n="take_everywhere">Leva contigo everywhere</h2>
+                <p class="text-white/80 mb-8" data-i18n="offline_text">Acede aos teus planos offline durante a viagem. Sem internet, sem stress!</p>
+                <div class="flex justify-center gap-2 mb-8">
+                    <div class="w-2 h-2 rounded-full bg-white/40"></div>
+                    <div class="w-2 h-2 rounded-full bg-white/40"></div>
+                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+                <button onclick="finishOnboarding()" class="w-full py-4 bg-accent-500 text-white rounded-2xl font-semibold btn-accent" data-i18n="explore">Explorar ToTravel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TEMPLATE SELECTOR MODAL
+         ============================================ -->
+    <div id="templateModal" class="modal">
+        <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                    <h2 class="font-display text-2xl font-bold text-slate-800" data-i18n="choose_template">Escolhe um Template</h2>
+                    <p class="text-slate-500" data-i18n="start_predefined">Começa com um roteiro pré-definido e personaliza</p>
+                </div>
+                <button onclick="closeTemplateModal()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition touch-feedback">
+                    <i class="fas fa-times text-slate-600"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Romance -->
+                    <div class="template-card bg-white border border-slate-200" onclick="selectTemplate('romance')">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400" alt="Romance">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3 text-white"><span class="text-2xl">💕</span></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-slate-800 card-title" data-i18n="template_romance">Escapadinha Romântica</h3>
+                            <p class="text-sm text-slate-500 mt-1">2-3 dias · <span data-i18n="special_dinners">Jantares especiais</span> · <span data-i18n="sunset">Pôr-do-sol</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Adventure -->
+                    <div class="template-card bg-white border border-slate-200" onclick="selectTemplate('aventura')">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1551632811-561732d1e306?w=400" alt="Aventura">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3 text-white"><span class="text-2xl">🏔️</span></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-slate-800 card-title" data-i18n="template_adventure">Aventura na Natureza</h3>
+                            <p class="text-sm text-slate-500 mt-1">5-7 dias · Trekking · <span data-i18n="camping">Acampamento</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Family -->
+                    <div class="template-card bg-white border border-slate-200" onclick="selectTemplate('familia')">
+                        <div class="relative">
+                            <img src="https://as2.ftcdn.net/jpg/03/50/48/41/1000_F_350484199_CR7eUMsPHCUdjLYsrfSa1An9YcWVimVk.webp" alt="Família">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3 text-white"><span class="text-2xl">👨‍👩‍👧‍👦</span></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-slate-800 card-title" data-i18n="template_family">Férias em Família</h3>
+                            <p class="text-sm text-slate-500 mt-1">7-10 dias · <span data-i18n="kids_activities">Atividades kids</span> · <span data-i18n="relax">Relax</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- City Break -->
+                    <div class="template-card bg-white border border-slate-200" onclick="selectTemplate('citybreak')">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400" alt="City Break">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3 text-white"><span class="text-2xl">🏙️</span></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-slate-800 card-title">City Break</h3>
+                            <p class="text-sm text-slate-500 mt-1">2-4 dias · <span data-i18n="culture">Cultura</span> · <span data-i18n="gastronomy">Gastronomia</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Beach -->
+                    <div class="template-card bg-white border border-slate-200" onclick="selectTemplate('praia')">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" alt="Praia">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3 text-white"><span class="text-2xl">🏖️</span></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-slate-800 card-title" data-i18n="template_beach">Relax na Praia</h3>
+                            <p class="text-sm text-slate-500 mt-1">5-7 dias · <span data-i18n="sun">Sol</span> · <span data-i18n="sea">Mar</span> · <span data-i18n="rest">Descanso</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Blank -->
+                    <div class="template-card bg-white border border-slate-200" onclick="selectTemplate('blank')">
+                        <div class="relative h-40 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                            <i class="fas fa-plus text-4xl text-slate-400"></i>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold text-slate-800 card-title" data-i18n="start_scratch">Começar do Zero</h3>
+                            <p class="text-sm text-slate-500 mt-1" data-i18n="create_own">Cria o teu próprio roteiro</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         NEW TRIP MODAL (BLOQUEADO - Não fecha em clique fora)
+         ============================================ -->
+    <div id="newTripModal" class="modal modal-locked">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div class="gradient-hero p-6 text-white">
+                <h2 class="font-display text-2xl font-bold" data-i18n="new_trip">Nova Viagem</h2>
+                <p class="text-white/80" data-i18n="start_adventure">Começa a planear a tua próxima aventura</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="trip_name">Nome da Viagem *</label>
+                    <input type="text" id="newTripName" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-50 transition" data-i18n-placeholder="ex_paris" placeholder="ex: Aventura em Paris">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="start_date">Data Início *</label>
+                        <input type="date" id="newTripStart" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" onchange="updateEndDateMin()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="end_date">Data Fim *</label>
+                        <input type="date" id="newTripEnd" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="destination">Cidade Destino *</label>
+                    <div class="relative">
+                        <input type="text" id="newTripDestination" class="w-full p-4 pl-12 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" data-i18n-placeholder="start_typing" placeholder="Começa a digitar..." autocomplete="off">
+                        <i class="fas fa-map-marker-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="budget">Orçamento Estimado</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">€</span>
+                        <input type="number" id="newTripBudget" class="w-full p-4 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" placeholder="0,00">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeNewTripModal()" class="flex-1 px-6 py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 font-medium transition touch-feedback btn-fixed" data-i18n="cancel">Cancelar</button>
+                    <button type="button" onclick="createNewTrip()" class="flex-1 px-6 py-4 btn-primary text-white rounded-xl font-medium transition touch-feedback btn-fixed" data-i18n="create_trip">Criar Viagem</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================
+         ADD PLACE MODAL (BLOQUEADO - Não fecha em clique fora)
+         ============================================ -->
+    <div id="addPlaceModal" class="modal modal-locked">
+        <div class="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
+                <h2 id="modalTitle" class="font-display text-xl font-bold text-slate-800" data-i18n="add_to_itinerary">Adicionar ao Roteiro</h2>
+                <input type="hidden" id="editingPlaceId" value="">
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="place">Local *</label>
+                    <input type="text" id="placeName" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" data-i18n-placeholder="place_name" placeholder="Nome do lugar">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="address">Endereço</label>
+                    <div class="relative">
+                        <input type="text" id="placeAddress" class="w-full p-4 pl-12 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" data-i18n-placeholder="search_address" placeholder="Procurar endereço..." autocomplete="off">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Hotel Dates Section -->
+                <div id="hotelDatesSection" class="hidden space-y-3 bg-purple-50 p-4 rounded-xl border border-purple-200">
+                    <h4 class="font-semibold text-purple-800 text-sm"><i class="fas fa-calendar-alt mr-2"></i><span data-i18n="stay_dates">Datas da Estadia</span></h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-purple-700 mb-1" data-i18n="check_in">Check-in</label>
+                            <input type="date" id="hotelCheckIn" class="w-full p-3 text-sm border border-purple-300 rounded-lg" onchange="updateHotelDates()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-purple-700 mb-1" data-i18n="check_out">Check-out</label>
+                            <input type="date" id="hotelCheckOut" class="w-full p-3 text-sm border border-purple-300 rounded-lg" onchange="updateHotelDates()">
+                        </div>
+                    </div>
+                    <p id="hotelDatesInfo" class="text-xs text-purple-600"></p>
+                </div>
+                
+                <!-- Transport Selector (AGORA COM BUS E TRAIN) -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="transport_mode">Meio de Transporte *</label>
+                    <div class="transport-select">
+                        <div class="transport-option selected" data-transport="walking" onclick="selectTransport('walking')">
+                            <i class="fas fa-walking text-emerald-500"></i>
+                            <span data-i18n="walking">A Pé</span>
+                        </div>
+                        <div class="transport-option" data-transport="transit" onclick="selectTransport('transit')">
+                            <i class="fas fa-bus text-purple-500"></i>
+                            <span data-i18n="public_transport">Público</span>
+                        </div>
+                        <div class="transport-option" data-transport="bus" onclick="selectTransport('bus')">
+                            <i class="fas fa-bus text-blue-500"></i>
+                            <span data-i18n="bus">Autocarro</span>
+                        </div>
+                        <div class="transport-option" data-transport="train" onclick="selectTransport('train')">
+                            <i class="fas fa-train text-purple-500"></i>
+                            <span data-i18n="train">Comboio</span>
+                        </div>
+                        <div class="transport-option" data-transport="driving" onclick="selectTransport('driving')">
+                            <i class="fas fa-car text-blue-500"></i>
+                            <span data-i18n="car">Carro</span>
+                        </div>
+                        <div class="transport-option" data-transport="ride" onclick="selectTransport('ride')">
+                            <i class="fas fa-taxi text-cyan-500"></i>
+                            <span data-i18n="ride_app">App</span>
+                        </div>
+                        <div class="transport-option" data-transport="flight" onclick="selectTransport('flight')">
+                            <i class="fas fa-plane text-amber-500"></i>
+                            <span data-i18n="flight">Voo</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="placeTransportMode" value="walking">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="category">Categoria</label>
+                        <select id="placeCategory" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" onchange="onCategoryChange()">
+                            <option value="hotel">🏨 <span data-i18n="hotel">Hotel</span></option>
+                            <option value="restaurant">🍽️ <span data-i18n="restaurant">Restaurante</span></option>
+                            <option value="attraction">📸 <span data-i18n="attraction">Atração</span></option>
+                            <option value="flight">✈️ <span data-i18n="airport">Aeroporto</span></option>
+                            <option value="transport">🚉 <span data-i18n="transport">Transporte</span></option>
+                            <option value="other">📍 <span data-i18n="other">Outro</span></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="day">Dia</label>
+                        <select id="placeDay" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition"></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="start">Início</label>
+                        <input type="time" id="placeStartTime" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="end">Fim</label>
+                        <input type="time" id="placeEndTime" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="activity_cost">Custo da Atividade</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">€</span>
+                        <input type="number" id="placeCost" step="0.01" min="0" class="w-full p-4 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" placeholder="0,00">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="notes">Notas</label>
+                    <textarea id="placeNotes" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 resize-none transition" rows="2" data-i18n-placeholder="additional_info" placeholder="Informações adicionais..."></textarea>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeAddPlaceModal()" class="flex-1 px-6 py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 font-medium transition touch-feedback btn-fixed" data-i18n="cancel">Cancelar</button>
+                    <button type="button" onclick="savePlace()" class="flex-1 px-6 py-4 btn-primary text-white rounded-xl font-medium transition touch-feedback btn-fixed" data-i18n="add">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         MEMORY/PHOTOS MODAL
+         ============================================ -->
+    <div id="memoryModal" class="modal">
+        <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                    <h2 class="font-display text-2xl font-bold text-slate-800" data-i18n="memory_album">Álbum de Memórias</h2>
+                    <p class="text-slate-500" data-i18n="save_moments">Guarda os melhores momentos da tua viagem</p>
+                </div>
+                <button onclick="closeMemoryModal()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition touch-feedback">
+                    <i class="fas fa-times text-slate-600"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="add_photos">Adicionar Fotos</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-primary-500 transition cursor-pointer" onclick="document.getElementById('photoInput').click()">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 mb-3"></i>
+                        <p class="text-slate-600" data-i18n="click_upload">Clique para carregar fotos</p>
+                        <p class="text-sm text-slate-400 mt-1" data-i18n="or_drag">ou arrasta para aqui</p>
+                        <input type="file" id="photoInput" multiple accept="image/*" class="hidden" onchange="handlePhotoUpload(this)">
+                    </div>
+                </div>
+                <div id="photoGallery" class="photo-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         EXPORT MODAL
+         ============================================ -->
+    <div id="exportModal" class="modal">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="gradient-hero p-6 text-white">
+                <h2 class="font-display text-2xl font-bold" data-i18n="share_trip">Partilhar Viagem</h2>
+                <p class="text-white/80" data-i18n="export_share">Exporta ou partilha o teu itinerário</p>
+            </div>
+            <div class="p-6 space-y-3">
+                <button type="button" onclick="exportToPDF()" class="w-full flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition cursor-pointer touch-feedback">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-file-pdf text-red-600 text-xl"></i>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="font-bold text-slate-800" data-i18n="export_pdf">Exportar PDF</h3>
+                        <p class="text-xs text-slate-500" data-i18n="professional_report">Relatório profissional da viagem</p>
+                    </div>
+                </button>
+                <button type="button" onclick="exportToFile()" class="w-full flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition cursor-pointer touch-feedback">
+                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-file-download text-primary-600 text-xl"></i>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="font-bold text-slate-800" data-i18n="save_file">Guardar Ficheiro</h3>
+                        <p class="text-xs text-slate-500">Backup JSON</p>
+                    </div>
+                </button>
+                <button type="button" onclick="shareTrip()" class="w-full flex items-center gap-4 p-4 border-2 border-slate-200 rounded-xl hover:border-accent-500 hover:bg-accent-50 transition cursor-pointer touch-feedback">
+                    <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-share-alt text-accent-600 text-xl"></i>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="font-bold text-slate-800" data-i18n="share_link">Partilhar Link</h3>
+                        <p class="text-xs text-slate-500" data-i18n="send_companions">Enviar para companheiros</p>
+                    </div>
+                </button>
+                <button type="button" onclick="closeExportModal()" class="w-full py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 font-medium transition mt-4 cursor-pointer touch-feedback btn-fixed" data-i18n="close">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         IMPORT MODAL
+         ============================================ -->
+    <div id="importModal" class="modal">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="bg-slate-600 p-6 text-white">
+                <h2 class="font-display text-2xl font-bold" data-i18n="load_trip">Carregar Viagem</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center">
+                    <input type="file" id="importFile" accept=".json" onchange="importFromFile(this)" class="hidden">
+                    <button type="button" onclick="document.getElementById('importFile').click()" class="px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition touch-feedback">
+                        <i class="fas fa-folder-open mr-2"></i><span data-i18n="select_file">Selecionar Ficheiro</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+                    <div class="relative flex justify-center"><span class="px-4 bg-white text-sm text-slate-500" data-i18n="or">ou</span></div>
+                </div>
+                <textarea id="importText" class="w-full h-32 p-4 text-sm border border-slate-200 rounded-xl font-mono bg-slate-50 resize-none focus:ring-2 focus:ring-primary-500 transition" data-i18n-placeholder="paste_code" placeholder="Cole o código da viagem aqui..."></textarea>
+                <button type="button" onclick="importFromText()" class="w-full py-4 bg-primary-500 text-white rounded-xl hover:bg-primary-600 font-medium transition touch-feedback" data-i18n="import">Importar</button>
+                <button type="button" onclick="closeImportModal()" class="w-full py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 font-medium transition touch-feedback" data-i18n="cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         QUICK EXPENSE MODAL
+         ============================================ -->
+    <div id="quickExpenseModal" class="modal">
+        <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-100">
+                <h2 class="font-display text-xl font-bold text-slate-800" data-i18n="register_expense">Registar Gasto</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="description">Descrição</label>
+                    <input type="text" id="quickExpenseDesc" class="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" data-i18n-placeholder="ex_dinner" placeholder="ex: Jantar">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="amount">Valor</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">€</span>
+                        <input type="number" id="quickExpenseAmount" step="0.01" class="w-full p-4 pl-10 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-slate-50 text-2xl font-bold transition" placeholder="0.00">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" data-i18n="category">Categoria</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setExpenseCategory('food')" class="expense-cat-btn p-3 border border-slate-200 rounded-xl text-center hover:bg-orange-50 hover:border-orange-300 transition touch-feedback" data-cat="food">
+                            <i class="fas fa-utensils text-orange-500 mb-1"></i>
+                            <p class="text-xs text-truncate" data-i18n="food">Comida</p>
+                        </button>
+                        <button type="button" onclick="setExpenseCategory('transport')" class="expense-cat-btn p-3 border border-slate-200 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition touch-feedback" data-cat="transport">
+                            <i class="fas fa-bus text-blue-500 mb-1"></i>
+                            <p class="text-xs text-truncate" data-i18n="transport">Transporte</p>
+                        </button>
+                        <button type="button" onclick="setExpenseCategory('shopping')" class="expense-cat-btn p-3 border border-slate-200 rounded-xl text-center hover:bg-purple-50 hover:border-purple-300 transition touch-feedback" data-cat="shopping">
+                            <i class="fas fa-shopping-bag text-purple-500 mb-1"></i>
+                            <p class="text-xs text-truncate" data-i18n="shopping">Compras</p>
+                        </button>
+                        <button type="button" onclick="setExpenseCategory('activity')" class="expense-cat-btn p-3 border border-slate-200 rounded-xl text-center hover:bg-green-50 hover:border-green-300 transition touch-feedback" data-cat="activity">
+                            <i class="fas fa-ticket-alt text-green-500 mb-1"></i>
+                            <p class="text-xs text-truncate" data-i18n="activities">Atividades</p>
+                        </button>
+                        <button type="button" onclick="setExpenseCategory('accommodation')" class="expense-cat-btn p-3 border border-slate-200 rounded-xl text-center hover:bg-indigo-50 hover:border-indigo-300 transition touch-feedback" data-cat="accommodation">
+                            <i class="fas fa-bed text-indigo-500 mb-1"></i>
+                            <p class="text-xs text-truncate" data-i18n="accommodation">Alojamento</p>
+                        </button>
+                        <button type="button" onclick="setExpenseCategory('other')" class="expense-cat-btn p-3 border border-slate-200 rounded-xl text-center hover:bg-slate-50 hover:border-slate-300 transition touch-feedback" data-cat="other">
+                            <i class="fas fa-ellipsis-h text-slate-500 mb-1"></i>
+                            <p class="text-xs text-truncate" data-i18n="other_cat">Outro</p>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeQuickExpenseModal()" class="flex-1 px-6 py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 font-medium transition touch-feedback btn-fixed" data-i18n="cancel">Cancelar</button>
+                    <button type="button" onclick="saveQuickExpense()" class="flex-1 px-6 py-4 btn-accent text-white rounded-xl font-medium transition touch-feedback btn-fixed" data-i18n="save">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         PLACE DETAILS MODAL (NOVO)
+         ============================================ -->
+    <div id="placeDetailsModal" class="modal">
+        <div class="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h2 class="font-display text-2xl font-bold text-slate-800" data-i18n="place_details">Detalhes do Local</h2>
+                <button onclick="closePlaceDetailsModal()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition touch-feedback">
+                    <i class="fas fa-times text-slate-600"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto" id="placeDetailsContent">
+                <!-- Conteúdo preenchido dinamicamente -->
+                <div class="text-center py-8 text-slate-400">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                    <p data-i18n="loading">A carregar...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         TOAST NOTIFICATION
+         ============================================ -->
+    <div id="toast" class="toast"></div>
+
+
+    <!-- ============================================
+         MAIN APP
+         ============================================ -->
+    <div id="app" class="min-h-screen flex flex-col hidden">
+        
+        <!-- HEADER -->
+        <header class="glass sticky top-0 z-50 border-b border-slate-200">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-plane text-white text-lg"></i>
+                    </div>
+                    <div class="mobile-hide">
+                        <h1 class="font-display font-bold text-xl text-slate-800">ToTravel</h1>
+                        <p class="text-xs text-slate-500" data-i18n="tagline">Planeia. Viaja. Recorda.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- Language Selector -->
+                    <div class="language-selector mr-2">
+                        <button class="language-btn" onclick="toggleLanguageDropdown()">
+                            <span id="currentLangFlag">🇵🇹</span>
+                            <span id="currentLangCode">PT</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="language-dropdown" id="languageDropdown">
+                            <div class="language-option active" onclick="changeLanguage('pt')" data-lang="pt">
+                                <span class="language-flag">🇵🇹</span>
+                                <span>Português</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('en')" data-lang="en">
+                                <span class="language-flag">🇬🇧</span>
+                                <span>English</span>
+                            </div>
+                            <div class="language-option" onclick="changeLanguage('es')" data-lang="es">
+                                <span class="language-flag">🇪🇸</span>
+                                <span>Español</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openImportModal()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition touch-feedback" data-i18n-title="load_trip" title="Carregar">
+                        <i class="fas fa-upload text-slate-600"></i>
+                    </button>
+                    <button onclick="openExportModal()" class="w-10 h-10 rounded-xl bg-primary-100 hover:bg-primary-200 flex items-center justify-center transition touch-feedback" data-i18n-title="share_trip" title="Partilhar">
+                        <i class="fas fa-share-alt text-primary-600"></i>
+                    </button>
+                    <button onclick="openNewTripModal()" class="px-4 py-2 btn-primary text-white rounded-xl font-medium text-sm flex items-center gap-2 transition touch-feedback btn-fixed-sm">
+                        <i class="fas fa-plus"></i>
+                        <span class="mobile-hide" data-i18n="new_trip_short">Nova Viagem</span>
+                    </button>
+                </div>
+            </div>
+            <div class="px-4 py-2 bg-slate-50/50 border-t border-slate-100">
+                <div class="flex items-center gap-3">
+                    <select id="tripSelector" onchange="switchTrip(this.value)" class="flex-1 p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white text-sm font-medium transition">
+                        <option value="" data-i18n="select_trip">Seleciona uma viagem...</option>
+                    </select>
+                    <button onclick="openMemoryModal()" class="w-10 h-10 rounded-xl bg-sunset-100 hover:bg-sunset-200 flex items-center justify-center transition touch-feedback" data-i18n-title="memory_album" title="Memórias">
+                        <i class="fas fa-images text-sunset-600"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+            
+            <!-- LEFT SIDEBAR - ITINERARY -->
+            <aside class="w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col">
+                <div class="flex border-b border-slate-200 bg-slate-50 relative">
+                    <button onclick="switchTab('itinerary')" id="tab-itinerary" class="flex-1 py-3 px-4 text-sm font-medium text-slate-600 tab-active transition-colors relative">
+                        <i class="fas fa-route mr-2"></i>
+                        <span class="mobile-hide" data-i18n="itinerary">Roteiro</span>
+                        <span class="lg:hidden" data-i18n="itinerary_short">Roteiro</span>
+                    </button>
+                    <button onclick="switchTab('timeline')" id="tab-timeline" class="flex-1 py-3 px-4 text-sm font-medium text-slate-600 transition-colors relative">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span class="mobile-hide" data-i18n="timeline">Timeline</span>
+                        <span class="lg:hidden" data-i18n="time_short">Timeline</span>
+                    </button>
+                    <button onclick="switchTab('budget')" id="tab-budget" class="flex-1 py-3 px-4 text-sm font-medium text-slate-600 transition-colors relative">
+                        <i class="fas fa-wallet mr-2"></i>
+                        <span class="mobile-hide" data-i18n="budget_tab">Orçamento</span>
+                        <span class="lg:hidden">€</span>
+                    </button>
+                    <button onclick="switchTab('stats')" id="tab-stats" class="flex-1 py-3 px-4 text-sm font-medium text-slate-600 transition-colors relative">
+                        <i class="fas fa-chart-pie mr-2"></i>
+                        <span class="mobile-hide" data-i18n="stats">Estatísticas</span>
+                        <span class="lg:hidden">Stats</span>
+                    </button>
+                    <div class="tab-indicator" id="tabIndicator"></div>
+                </div>
+                <div id="sidebar-content" class="flex-1 overflow-y-auto p-4 bg-slate-50"></div>
+                <div class="p-4 border-t border-slate-200 bg-white mobile-hide">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="openAddPlaceModal()" class="py-3 px-4 btn-primary text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition touch-feedback btn-fixed">
+                            <i class="fas fa-plus"></i> <span data-i18n="add_place">Adicionar Local</span>
+                        </button>
+                        <button onclick="openQuickExpenseModal()" class="py-3 px-4 btn-accent text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition touch-feedback btn-fixed">
+                            <i class="fas fa-receipt"></i> <span data-i18n="register_expense_short">Registar Gasto</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CENTER - MAP -->
+            <section class="flex-1 relative bg-slate-100 min-h-[300px] lg:min-h-0">
+                <div id="map" class="w-full h-full"></div>
+                
+                <!-- Map Controls -->
+                <div class="map-controls">
+                    <!-- View Toggle -->
+                    <div class="map-view-toggle">
+                        <button id="btnTerrain" class="map-view-btn active" onclick="setMapView('terrain')" data-i18n="terrain">Terreno</button>
+                        <button id="btnSatellite" class="map-view-btn" onclick="setMapView('satellite')" data-i18n="satellite">Satélite</button>
+                    </div>
+                    
+                    <!-- POI Controls (com scroll horizontal em mobile) -->
+                    <div class="map-poi-controls">
+                        <button class="map-poi-btn" onclick="togglePOI('hotel')" data-poi="hotel">
+                            <i class="fas fa-bed text-purple-500"></i>
+                            <span data-i18n="hotels">Hotéis</span>
+                        </button>
+                        <button class="map-poi-btn" onclick="togglePOI('restaurant')" data-poi="restaurant">
+                            <i class="fas fa-utensils text-orange-500"></i>
+                            <span data-i18n="restaurants">Restaurantes</span>
+                        </button>
+                        <button class="map-poi-btn" onclick="togglePOI('attraction')" data-poi="attraction">
+                            <i class="fas fa-camera text-blue-500"></i>
+                            <span data-i18n="attractions">Atrações</span>
+                        </button>
+                        <button class="map-poi-btn" onclick="togglePOI('museum')" data-poi="museum">
+                            <i class="fas fa-landmark text-purple-500"></i>
+                            <span data-i18n="museums">Museus</span>
+                        </button>
+                        <button class="map-poi-btn" onclick="togglePOI('transit')" data-poi="transit">
+                            <i class="fas fa-bus text-emerald-500"></i>
+                            <span data-i18n="public_transport">Transportes</span>
+                        </button>
+                        <button class="map-poi-btn" onclick="togglePOI('pharmacy')" data-poi="pharmacy">
+                            <i class="fas fa-prescription-bottle-alt text-red-500"></i>
+                            <span data-i18n="pharmacies">Farmácias</span>
+                        </button>
+                        <button class="map-poi-btn" onclick="togglePOI('atm')" data-poi="atm">
+                            <i class="fas fa-money-bill-wave text-green-500"></i>
+                            <span data-i18n="atm">Multibanco</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Geolocation Controls -->
+                <div class="geolocation-controls">
+                    <button id="geoLocationBtn" class="geolocation-btn" onclick="toggleGeolocation()" title="Minha Localização">
+                        <i class="fas fa-crosshairs"></i>
+                        <span class="geolocation-tooltip" data-i18n="my_location">A Minha Localização</span>
+                    </button>
+                    <button id="followLocationBtn" class="geolocation-btn hidden" onclick="toggleFollowLocation()" title="Seguir Posição">
+                        <i class="fas fa-location-arrow"></i>
+                        <span class="geolocation-tooltip" data-i18n="follow_location">Seguir Posição</span>
+                    </button>
+                </div>
+                
+                <!-- Location Status -->
+                <div id="locationStatus" class="location-status">
+                    <span data-i18n="location_active">Localização ativa</span>
+                </div>
+                
+                <!-- Map Overlay -->
+                <div class="map-overlay-container">
+                    <div class="map-overlay-card" id="mapOverlayCard">
+                        <div class="map-overlay-header" onclick="toggleMapOverlay()">
+                            <div class="flex-1 min-w-0">
+                                <h3 id="overlayDestination" class="font-display font-bold text-slate-800 text-lg truncate"></h3>
+                                <p id="overlayDates" class="text-sm text-slate-500 mt-0.5"></p>
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0">
+                                <div id="overlayBudget" class="text-right">
+                                    <p class="text-xs text-slate-500" data-i18n="budget_label">Orçamento</p>
+                                    <p class="font-bold text-primary-600"></p>
+                                </div>
+                                <div class="map-overlay-toggle" id="mapOverlayToggle">
+                                    <i class="fas fa-minus" id="mapOverlayIcon"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="map-overlay-content px-5 pb-4" id="mapOverlayContent">
+                            <!-- Route Summary -->
+                            <div id="routeSummary" class="pt-3 border-t border-slate-200 hidden">
+                                <div class="grid grid-cols-3 gap-2 text-center">
+                                    <div class="bg-slate-50 rounded-lg p-2">
+                                        <p class="text-xs text-slate-500" data-i18n="distance">Distância</p>
+                                        <p id="totalRouteDistance" class="font-bold text-slate-700 text-sm">--</p>
+                                    </div>
+                                    <div class="bg-slate-50 rounded-lg p-2">
+                                        <p class="text-xs text-slate-500" data-i18n="time">Tempo</p>
+                                        <p id="totalRouteTime" class="font-bold text-slate-700 text-sm">--</p>
+                                    </div>
+                                    <div class="bg-slate-50 rounded-lg p-2">
+                                        <p class="text-xs text-slate-500" data-i18n="segments">Segmentos</p>
+                                        <p id="totalRouteSegments" class="font-bold text-slate-700 text-sm">--</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map Loader -->
+                <div id="mapLoader" class="absolute inset-0 flex items-center justify-center bg-slate-100 z-20">
+                    <div class="text-center">
+                        <div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-slate-600 font-medium" data-i18n="loading_map">A carregar mapa...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT SIDEBAR - CHECKLISTS & NOTES -->
+            <aside class="w-full lg:w-80 bg-white border-l border-slate-200 flex flex-col mobile-hide">
+                <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-primary-50 to-blue-50">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-clipboard-check text-primary-600"></i>
+                        <span data-i18n="checklists_notes">Checklists & Notas</span>
+                    </h3>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Packing List -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
+                                <i class="fas fa-suitcase text-primary-500"></i>
+                                <span data-i18n="packing_list">Mala de Viagem</span>
+                            </h4>
+                            <button onclick="addChecklistItem('packing')" class="w-8 h-8 rounded-full bg-primary-100 hover:bg-primary-200 flex items-center justify-center text-primary-600 transition touch-feedback">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <ul id="packingList" class="space-y-2"></ul>
+                    </div>
+                    
+                    <!-- To Do List -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
+                                <i class="fas fa-tasks text-accent-500"></i>
+                                <span data-i18n="to_do">A Fazer</span>
+                            </h4>
+                            <button onclick="addChecklistItem('todo')" class="w-8 h-8 rounded-full bg-accent-100 hover:bg-accent-200 flex items-center justify-center text-accent-600 transition touch-feedback">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <ul id="todoList" class="space-y-2"></ul>
+                    </div>
+                    
+                    <!-- Trip Notes -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                        <h4 class="font-semibold text-sm text-slate-700 mb-2 flex items-center gap-2">
+                            <i class="fas fa-sticky-note text-sunset-500"></i>
+                            <span data-i18n="trip_notes">Notas da Viagem</span>
+                        </h4>
+                        <textarea id="tripNotes" onchange="saveNotes()" class="w-full h-32 p-3 text-sm border border-slate-200 rounded-xl resize-none focus:ring-2 focus:ring-primary-500 bg-slate-50 transition" data-i18n-placeholder="notes_placeholder" placeholder="Anotações importantes, ideias, lembretes..."></textarea>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- MOBILE BOTTOM NAV -->
+        <nav class="lg:hidden glass border-t border-slate-200 px-4 py-2 bottom-nav">
+            <div class="flex justify-around bottom-nav-content">
+                <button onclick="switchTab('itinerary')" class="bottom-nav-item active p-3 text-primary-600 flex flex-col items-center gap-1">
+                    <i class="fas fa-route text-xl"></i>
+                    <span class="text-xs" data-i18n="itinerary_short">Roteiro</span>
+                </button>
+                <button onclick="switchTab('timeline')" class="bottom-nav-item p-3 text-slate-400 flex flex-col items-center gap-1">
+                    <i class="fas fa-clock text-xl"></i>
+                    <span class="text-xs" data-i18n="time_short">Timeline</span>
+                </button>
+                <button onclick="openAddPlaceModal()" class="p-3 -mt-6">
+                    <div class="fab">
+                        <i class="fas fa-plus text-white text-xl"></i>
+                    </div>
+                </button>
+                <button onclick="switchTab('budget')" class="bottom-nav-item p-3 text-slate-400 flex flex-col items-center gap-1">
+                    <i class="fas fa-wallet text-xl"></i>
+                    <span class="text-xs" data-i18n="budget_short">Orçamento</span>
+                </button>
+                <button onclick="openQuickExpenseModal()" class="bottom-nav-item p-3 text-slate-400 flex flex-col items-center gap-1">
+                    <i class="fas fa-receipt text-xl"></i>
+                    <span class="text-xs" data-i18n="expense_short">Gasto</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- OFFLINE INDICATOR -->
+    <div id="offlineIndicator" class="fixed top-20 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full text-sm hidden z-50">
+        <i class="fas fa-wifi-slash mr-2"></i>
+        <span data-i18n="offline_mode">Modo Offline</span>
+    </div>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <!-- Translations -->
+    <script src="translations.js"></script>
+    <!-- App Logic -->
+    <script src="script.js"></script>
+    <!-- Google Maps API (carrega após o script para garantir que initMap esteja definido) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places,geometry&callback=initMap" async defer></script>
+</body>
+</html>
